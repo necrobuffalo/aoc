@@ -4,6 +4,8 @@ use std::fs::File;
 
 use std::env;
 
+use std::collections::HashSet;
+
 fn main() -> io::Result<()> {
     // Set up CLI args
     let args: Vec<String> = env::args().collect();
@@ -38,7 +40,8 @@ fn part_a(input: String) {
 
 fn part_b(input: String) {
     let mut frequency = 0;
-    let mut visited = vec![0];
+    let mut visited = HashSet::new();
+    visited.insert(0);
 
     'outer: loop {
         for p in input.split_whitespace() {
@@ -47,7 +50,7 @@ fn part_b(input: String) {
             if visited.contains(&frequency) {
                 break 'outer;
             }
-            visited.push(frequency);
+            visited.insert(frequency);
         }
     }
 
