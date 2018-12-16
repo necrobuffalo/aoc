@@ -53,8 +53,22 @@ fn part_a(input: String) {
 }
 
 fn part_b(input: String) {
-    for line in input.split_whitespace() {
-        
+    let ids = input.split_whitespace().collect::<Vec<&str>>();
+    'outer: for (i,a) in ids.iter().enumerate() {
+        for b in &ids[i..ids.len()] {
+            let distance = hamming_distance(a.to_string(),b.to_string());
+            if distance == 1 {
+                println!("a: {} b: {}", a, b);
+                //find letters in common
+                for (x,y) in a.chars().zip(b.chars()) {
+                    if x == y {
+                        print!("{}", x);
+                    }
+                }
+                println!();
+                break 'outer;
+            }
+        }
     }
 }
 
@@ -67,4 +81,14 @@ fn count_letters(word: String) -> HashMap<char,u32> {
     }
 
     count
+}
+
+fn hamming_distance(w1: String, w2: String) -> u32 {
+    let mut distance = 0;
+    for (a, b) in w1.chars().zip(w2.chars()) {
+        if a != b {
+            distance += 1;
+        }
+    }
+    distance
 }
