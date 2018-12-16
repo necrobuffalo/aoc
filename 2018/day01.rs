@@ -39,15 +39,13 @@ fn part_a(input: String) {
 fn part_b(input: String) {
     let mut frequency = 0;
     let mut visited = vec![0];
-    let mut found = false;
 
-    while !found {
+    'outer: loop {
         for p in input.split_whitespace() {
             let s: i32 = p.parse().unwrap();
             frequency += s;
             if visited.contains(&frequency) {
-                found = true;
-                break;
+                break 'outer;
             }
             visited.push(frequency);
         }
