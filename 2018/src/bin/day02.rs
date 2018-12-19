@@ -1,6 +1,6 @@
+use std::fs::File;
 use std::io;
 use std::io::prelude::*;
-use std::fs::File;
 
 use std::env;
 
@@ -33,7 +33,7 @@ fn part_a(input: String) {
     let mut got_three = false;
 
     for line in input.split_whitespace() {
-        let count = count_letters(line.to_string());
+        let count = count_letters(line);
         println!("id: {} count: {:?}", line, count);
         for v in count.values() {
             if (*v == 2) && !got_two {
@@ -54,13 +54,13 @@ fn part_a(input: String) {
 
 fn part_b(input: String) {
     let ids = input.split_whitespace().collect::<Vec<&str>>();
-    'outer: for (i,a) in ids.iter().enumerate() {
+    'outer: for (i, a) in ids.iter().enumerate() {
         for b in &ids[i..ids.len()] {
-            let distance = hamming_distance(a.to_string(),b.to_string());
+            let distance = hamming_distance(a, b);
             if distance == 1 {
                 println!("a: {} b: {}", a, b);
                 //find letters in common
-                for (x,y) in a.chars().zip(b.chars()) {
+                for (x, y) in a.chars().zip(b.chars()) {
                     if x == y {
                         print!("{}", x);
                     }
@@ -72,7 +72,7 @@ fn part_b(input: String) {
     }
 }
 
-fn count_letters(word: String) -> HashMap<char,u32> {
+fn count_letters(word: &str) -> HashMap<char, u32> {
     let mut count = HashMap::new();
 
     for c in word.chars() {
@@ -83,7 +83,7 @@ fn count_letters(word: String) -> HashMap<char,u32> {
     count
 }
 
-fn hamming_distance(w1: String, w2: String) -> u32 {
+fn hamming_distance(w1: &str, w2: &str) -> u32 {
     let mut distance = 0;
     for (a, b) in w1.chars().zip(w2.chars()) {
         if a != b {
