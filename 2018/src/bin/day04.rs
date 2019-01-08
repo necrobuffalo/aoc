@@ -97,7 +97,8 @@ fn part_a(input: String) {
 
     let guard = most_sleep(&log);
 
-    let minute = sleepiest_minute(&log, guard);
+    let map = build_sleep_map(&log);
+    let minute = sleepiest_minute(&map, guard);
     println!("Guard {} at minute {}", guard, minute);
     println!("Result: {}", guard * minute);
 }
@@ -107,6 +108,23 @@ fn part_a(input: String) {
 ////////////
 fn part_b(input: String) {
     let log = read_guard_log(input);
+    let map = build_sleep_map(&log);
+
+    let mut max_guard = -1;
+    let mut max_minute = 0;
+    let mut max_slept = 0;
+    for (guard, schedule) in map.iter() {
+        for (minute, count) in schedule.iter() {
+            if count > &max_slept {
+                max_slept = *count;
+                max_minute = *minute;
+                max_guard = *guard;
+            }
+        }
+    }
+
+    println!("guard: {} minute: {}", max_guard, max_minute);
+    println!("result: {}", max_guard * max_minute);
 }
 
 /////////////
@@ -169,25 +187,25 @@ fn most_sleep(log: &BTreeSet<LogEntry>) -> i32 {
     *sleep_counts.iter().max_by_key(|x| x.1).unwrap().0
 }
 
-fn sleepiest_minute(log: &BTreeSet<LogEntry>, guard: i32) -> i32 {
-    let mut sleep_counts = HashMap::new();
+// Find the minute where this guard slept the most
+fn sleepiest_minute(sleep_map: &HashMap<i32, HashMap<i32, i32>>, guard: i32) -> i32 {
+    *sleep_map.get(&guard).unwrap().iter().max_by_key(|x| x.1).unwrap().0
+}
+
+// Map each guard to the minutes they were sleeping and how often
+fn build_sleep_map(log: &BTreeSet<LogEntry>) -> HashMap<i32, HashMap<i32, i32>> {
     let mut current_guard = -1;
+    let mut sleep_map = HashMap::new();
     let mut last_slept_minute = 0;
 
     for entry in log {
-        // Unless it's the guard we're checking we don't care.
         match entry.action {
             GuardAction::FellAsleep => {
-                if current_guard == guard {
-                    last_slept_minute = entry.minute;
-                }
+                last_slept_minute = entry.minute;
             }
             GuardAction::WokeUp => {
-                if current_guard == guard {
-                    for i in last_slept_minute..entry.minute {
-                        // Increment all the minutes we were sleeping for
-                        *sleep_counts.entry(i).or_insert(0) += 1;
-                    }
+                for i in last_slept_minute..entry.minute {
+                    *sleep_map.entry(current_guard).or_insert(HashMap::new()).entry(i).or_insert(0) += 1
                 }
             }
             GuardAction::StartedShift(guard_number) => {
@@ -196,5 +214,5 @@ fn sleepiest_minute(log: &BTreeSet<LogEntry>, guard: i32) -> i32 {
         }
     }
 
-    *sleep_counts.iter().max_by_key(|x| x.1).unwrap().0
+    sleep_map
 }
