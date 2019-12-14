@@ -5,8 +5,6 @@ from typing import List
 
 import pexpect
 
-from intcode import execute
-
 DEFAULT_CONCURRENCY = 30
 
 
