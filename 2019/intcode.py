@@ -54,7 +54,6 @@ def execute(program: List[int]) -> List[int]:
             program[program[eip+3]] = 1 if left_side == right_side else 0
             eip = eip + 4
         elif int(opcode) == 99:
-            print("Caught 99, halting")
             break
 
     return program
