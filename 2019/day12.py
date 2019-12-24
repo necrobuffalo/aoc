@@ -1,4 +1,6 @@
+from copy import deepcopy
 from itertools import combinations
+import math
 import re
 import sys
 from typing import List, Tuple
@@ -44,6 +46,7 @@ def parse_moon(line: str) -> Moon:
     m = re.match(moon_pattern, line).groupdict()
     return Moon(int(m['x']), int(m['y']), int(m['z']))
 
+
 def apply_gravity(m: Tuple[Moon, Moon]):
     m1 = m[0]
     m2 = m[1]
@@ -68,18 +71,80 @@ def apply_gravity(m: Tuple[Moon, Moon]):
         m1.velocity.z = m1.velocity.z + 1
         m2.velocity.z = m2.velocity.z - 1
 
+
 def gravity_step(moons: List[Moon]):
     for c in combinations(moons, 2):
         apply_gravity(c)
 
 
-def simulate_n(moons: List[Moon], steps=1000):
+def simulate_steps(moons: List[Moon], steps=1000):
     for i in range(0,steps):
         gravity_step(moons)
         for m in moons:
             m.velocity_step()
     total_energy = sum(map(lambda m: m.kinetic_energy() * m.potential_energy(), moons))
     print(total_energy)
+
+
+def simulate_x_repeating(moons: List[Moon]) -> int:
+    steps = 0
+    states = set()
+    # continue until all x and velocity.x match old state
+    while str([(m.x, m.velocity.x) for m in moons]) not in states:
+        if steps % 10000 == 0:
+            print("Simulated {} steps".format(steps))
+
+        # save old state
+        states.add(str([(m.x, m.velocity.x) for m in moons]))
+        # update state
+        gravity_step(moons)
+        for m in moons:
+            m.velocity_step()
+
+        steps = steps + 1
+    return steps
+
+def simulate_y_repeating(moons: List[Moon]) -> int:
+    steps = 0
+    states = set()
+    # continue until all x and velocity.x match old state
+    while str([(m.y, m.velocity.y) for m in moons]) not in states:
+        if steps % 10000 == 0:
+            print("Simulated {} steps".format(steps))
+
+        # save old state
+        states.add(str([(m.y, m.velocity.y) for m in moons]))
+        # update state
+        gravity_step(moons)
+        for m in moons:
+            m.velocity_step()
+
+        steps = steps + 1
+    return steps
+
+
+def simulate_z_repeating(moons: List[Moon]) -> int:
+    steps = 0
+    states = set()
+
+    while str([(m.z, m.velocity.z) for m in moons]) not in states:
+        if steps % 10000 == 0:
+            print("Simulated {} steps".format(steps))
+
+        # save old state
+        states.add(str([(m.z, m.velocity.z) for m in moons]))
+        # update state
+        gravity_step(moons)
+        for m in moons:
+            m.velocity_step()
+
+        steps = steps + 1
+    return steps
+
+
+def lcm(x: int, y: int, z: int) -> int:
+    half_lcm = int(abs(x * y) / math.gcd(x,y))
+    return int(abs(half_lcm * z) / math.gcd(half_lcm, z))
 
 if __name__ == '__main__':
     assert len(sys.argv) > 1
@@ -91,4 +156,14 @@ if __name__ == '__main__':
     for m in raw_moons:
         moons.append(parse_moon(m))
 
-    simulate_n(moons)
+    simulate_steps(deepcopy(moons))
+
+    print("Finding x cycle")
+    x = simulate_x_repeating(deepcopy(moons))
+    print("Finding y cycle")
+    y = simulate_y_repeating(deepcopy(moons))
+    print("Finding z cycle")
+    z = simulate_z_repeating(deepcopy(moons))
+    print("Finding least common multiple")
+    least_common_multiple = lcm(x,y,z)
+    print("All moons repeat after {} steps".format(least_common_multiple))
